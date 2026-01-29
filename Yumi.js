@@ -1,16 +1,19 @@
 const API_URL = "http://localhost:3000/produtos";
 
-// Modais
 const modal = document.getElementById("modalOverlay");
 const stockModal = document.getElementById("stockModalOverlay");
 
 document.getElementById("openModal").onclick = () => modal.style.display = "block";
 document.getElementById("openStockModal").onclick = () => abrirReposicao();
 
+// FUNÇÃO ATUALIZADA PARA LINKS DO DRIVE (docs ou drive)
 function formatarLinkDrive(link) {
-    if (link.includes('drive.google.com')) {
-        const match = link.match(/\/d\/(.+?)\/(view|edit)?/);
-        if (match) return `http://googleusercontent.com/profile/picture/2{match[1]}`;
+    if (link.includes('google.com')) {
+        // Tenta extrair o ID que fica entre "/d/" e a próxima "/"
+        const match = link.match(/\/d\/(.+?)\//);
+        if (match && match[1]) {
+            return `https://docs.google.com/uc?export=view&id=${match[1]}`;
+        }
     }
     return link;
 }
@@ -77,7 +80,7 @@ async function renderizar() {
                 <div class="grid-container">
                     ${itens.map(p => `
                         <div class="card-produto">
-                            <img src="${p.imagem}" onerror="this.src='https://via.placeholder.com/110x140'">
+                            <img src="${p.imagem}" onerror="this.src='https://via.placeholder.com/110x140?text=Erro+Imagem'">
                             <div class="info">
                                 <h4>${p.nome}</h4>
                                 <p class="price">R$ ${parseFloat(p.valor).toFixed(2)}</p>
