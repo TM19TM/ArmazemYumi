@@ -1,20 +1,46 @@
 const API_URL = "http://localhost:3000/produtos";
 
-// ... (mantenha as funções de Modal e ajustarCampos anteriores)
+// Controlo do Modal
+const modal = document.getElementById("modalOverlay");
+document.getElementById("openModal").onclick = () => modal.style.display = "block";
+document.querySelector(".close-btn").onclick = () => modal.style.display = "none";
+window.onclick = (event) => { if (event.target == modal) modal.style.display = "none"; }
 
-// Função para converter link do Google Drive em link direto de imagem
+// Alterna entre campos de Classe ou Tamanho conforme a categoria
+function ajustarCampos() {
+    const cat = document.getElementById("categoriaSelect").value;
+    const area = document.getElementById("areaDinâmica");
+    area.innerHTML = "";
+
+    if (["Boneco", "Chaveiro", "Caneta", "Colar", "PhoneStrap"].includes(cat)) {
+        area.innerHTML = `<select id="classe" required>
+            <option value="Bronze">Bronze</option>
+            <option value="Prata">Prata</option>
+            <option value="Ouro">Ouro</option>
+        </select>`;
+    } else if (cat === "Pulseira") {
+        area.innerHTML = `<select id="tamanho" required>
+            <option value="PP">PP</option><option value="P">P</option><option value="M">M</option><option value="G">G</option><option value="GG">GG</option>
+        </select>`;
+    } else {
+        area.innerHTML = `<select id="tamanho" required>
+            <option value="Pequeno">Pequeno</option><option value="Médio">Médio</option><option value="Grande">Grande</option>
+        </select>`;
+    }
+}
+
+// Converte link do Drive para link direto de imagem
 function formatarLinkDrive(link) {
     if (link.includes('drive.google.com')) {
-        // Extrai o ID do arquivo do link do Drive
         const match = link.match(/\/d\/(.+?)\/(view|edit)?/);
         if (match && match[1]) {
             return `https://lh3.googleusercontent.com/u/0/d/${match[1]}`;
         }
     }
-    return link; // Retorna o link original se não for Drive
+    return link; 
 }
 
-// Salvar no MongoDB
+// Submeter formulário para o MongoDB
 document.getElementById("formProduto").onsubmit = async (e) => {
     e.preventDefault();
     const data = {
@@ -24,11 +50,8 @@ document.getElementById("formProduto").onsubmit = async (e) => {
         tamanho: document.getElementById("tamanho")?.value || null,
         quantidade: document.getElementById("quantidade").value,
         valor: document.getElementById("valor").value,
-        imagem: document.getElementById("nome").value // Campo imagem agora recebe o link
+        imagem: formatarLinkDrive(document.getElementById("imagem").value)
     };
-
-    // Pegamos o valor direto do input de imagem para tratar
-    data.imagem = formatarLinkDrive(document.getElementById("imagem").value);
 
     try {
         const res = await fetch(API_URL, {
@@ -43,7 +66,7 @@ document.getElementById("formProduto").onsubmit = async (e) => {
     } catch (err) { alert("Erro ao salvar!"); }
 };
 
-// Função para remover item do MongoDB
+// Remover produto do banco
 async function remover(id) {
     if (confirm("Deseja realmente excluir este item?")) {
         try {
@@ -53,6 +76,7 @@ async function remover(id) {
     }
 }
 
+// Carregar e exibir produtos organizados
 async function renderizar() {
     const container = document.getElementById("catalogoCompleto");
     try {
@@ -85,7 +109,7 @@ async function renderizar() {
             `;
         }).join('');
     } catch (err) {
-        container.innerHTML = "<h3>Erro ao carregar catálogo.</h3>";
+        container.innerHTML = "<h3>Ligue o servidor para carregar os produtos.</h3>";
     }
 }
 
