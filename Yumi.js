@@ -6,16 +6,18 @@ const stockModal = document.getElementById("stockModalOverlay");
 document.getElementById("openModal").onclick = () => modal.style.display = "block";
 document.getElementById("openStockModal").onclick = () => abrirReposicao();
 
-// FUNÇÃO CORRIGIDA PARA EXTRAIR O ID DO DRIVE DE QUALQUER FORMATO DE LINK
+/**
+ * Converte links do Google Drive para o formato direto de visualização.
+ * Suporta links de compartilhamento padrão e links diretos do servidor de conteúdo (lh3).
+ */
 function formatarLinkDrive(link) {
-    if (link.includes('drive.google.com') || link.includes('google.com')) {
-        // Captura o ID que vem após "/d/" até encontrar a próxima "/" ou caracteres de parâmetros (? ou #)
-        const match = link.match(/\/d\/([^/?#]+)/);
+    if (link.includes('drive.google.com')) {
+        const match = link.match(/\/d\/(.+?)\/(view|edit)?/);
         if (match && match[1]) {
-            return `https://docs.google.com/uc?export=view&id=${match[1]}`;
+            return `https://lh3.googleusercontent.com/u/0/d/${match[1]}`;
         }
     }
-    return link;
+    return link; 
 }
 
 function ajustarCampos() {
@@ -80,7 +82,7 @@ async function renderizar() {
                 <div class="grid-container">
                     ${itens.map(p => `
                         <div class="card-produto">
-                            <img src="${p.imagem}" onerror="this.src='https://via.placeholder.com/110x140?text=Erro+Imagem'">
+                            <img src="${formatarLinkDrive(p.imagem)}" onerror="this.src='https://via.placeholder.com/110x140?text=Erro+Imagem'">
                             <div class="info">
                                 <h4>${p.nome}</h4>
                                 <p class="price">R$ ${parseFloat(p.valor).toFixed(2)}</p>
