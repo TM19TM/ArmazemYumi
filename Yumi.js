@@ -1,46 +1,51 @@
 const API_URL = "http://localhost:3000/produtos";
 
-// Controlo do Modal
+// Modais
 const modal = document.getElementById("modalOverlay");
+const stockModal = document.getElementById("stockModalOverlay");
+
 document.getElementById("openModal").onclick = () => modal.style.display = "block";
-document.querySelector(".close-btn").onclick = () => modal.style.display = "none";
-window.onclick = (event) => { if (event.target == modal) modal.style.display = "none"; }
+document.getElementById("openStockModal").onclick = () => abrirReposicao();
 
-// Alterna entre campos de Classe ou Tamanho conforme a categoria
-function ajustarCampos() {
-    const cat = document.getElementById("categoriaSelect").value;
-    const area = document.getElementById("areaDinâmica");
-    area.innerHTML = "";
-
-    if (["Boneco", "Chaveiro", "Caneta", "Colar", "PhoneStrap"].includes(cat)) {
-        area.innerHTML = `<select id="classe" required>
-            <option value="Bronze">Bronze</option>
-            <option value="Prata">Prata</option>
-            <option value="Ouro">Ouro</option>
-        </select>`;
-    } else if (cat === "Pulseira") {
-        area.innerHTML = `<select id="tamanho" required>
-            <option value="PP">PP</option><option value="P">P</option><option value="M">M</option><option value="G">G</option><option value="GG">GG</option>
-        </select>`;
-    } else {
-        area.innerHTML = `<select id="tamanho" required>
-            <option value="Pequeno">Pequeno</option><option value="Médio">Médio</option><option value="Grande">Grande</option>
-        </select>`;
-    }
-}
-
-// Converte link do Drive para link direto de imagem
 function formatarLinkDrive(link) {
     if (link.includes('drive.google.com')) {
         const match = link.match(/\/d\/(.+?)\/(view|edit)?/);
-        if (match && match[1]) {
-            return `https://lh3.googleusercontent.com/u/0/d/${match[1]}`;
-        }
+        if (match) return `http://googleusercontent.com/profile/picture/2{match[1]}`;
     }
-    return link; 
+    return link;
 }
 
-// Submeter formulário para o MongoDB
+function ajustarCampos() {
+    const cat = document.getElementById("categoriaSelect").value;
+    const area = document.getElementById("areaDinâmica");
+    area.innerHTML = (["Boneco", "Chaveiro", "Caneta", "Colar", "PhoneStrap"].includes(cat)) 
+        ? `<select id="classe" required><option value="Bronze">Bronze</option><option value="Prata">Prata</option><option value="Ouro">Ouro</option></select>`
+        : `<select id="tamanho" required><option value="Pequeno">Pequeno</option><option value="Médio">Médio</option><option value="Grande">Grande</option></select>`;
+}
+
+async function abrirReposicao() {
+    stockModal.style.display = "block";
+    const res = await fetch(API_URL);
+    const produtos = await res.json();
+    document.getElementById("listaReposição").innerHTML = produtos.map(p => `
+        <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee">
+            <span>${p.nome}</span>
+            <button onclick="adicionarUm('${p._id}')" style="cursor:pointer; background:#C8B2F2; border:1px solid #000; border-radius:5px; padding:2px 10px">+</button>
+        </div>
+    `).join('');
+}
+
+async function adicionarUm(id) {
+    await fetch(`${API_URL}/${id}/adicionar-um`, { method: 'PATCH' });
+    renderizar();
+    abrirReposicao();
+}
+
+async function removerUm(id) {
+    await fetch(`${API_URL}/${id}/remover-um`, { method: 'PATCH' });
+    renderizar();
+}
+
 document.getElementById("formProduto").onsubmit = async (e) => {
     e.preventDefault();
     const data = {
@@ -52,65 +57,37 @@ document.getElementById("formProduto").onsubmit = async (e) => {
         valor: document.getElementById("valor").value,
         imagem: formatarLinkDrive(document.getElementById("imagem").value)
     };
-
-    try {
-        const res = await fetch(API_URL, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        });
-        if(res.ok) { 
-            modal.style.display = "none";
-            renderizar();
-        }
-    } catch (err) { alert("Erro ao salvar!"); }
+    await fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+    modal.style.display = "none";
+    renderizar();
 };
 
-// Remover produto do banco
-async function remover(id) {
-    if (confirm("Deseja realmente excluir este item?")) {
-        try {
-            const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-            if (res.ok) renderizar();
-        } catch (err) { alert("Erro ao remover!"); }
-    }
-}
-
-// Carregar e exibir produtos organizados
 async function renderizar() {
     const container = document.getElementById("catalogoCompleto");
-    try {
-        const res = await fetch(API_URL);
-        const produtos = await res.json();
-        const categorias = ["Boneco", "Brinco", "Caneta", "Chaveiro", "Colar", "Fotocard", "PhoneStrap", "Pulseira"];
-        
-        container.innerHTML = categorias.map(cat => {
-            const itens = produtos.filter(p => p.categoria === cat);
-            if (itens.length === 0) return '';
-            
-            return `
-                <section id="sec-${cat}" class="categoria-group">
-                    <h2>${cat}s</h2>
-                    <div class="grid-container">
-                        ${itens.map(p => `
-                            <div class="card-produto">
-                                <img src="${p.imagem}" alt="${p.nome}" onerror="this.src='https://via.placeholder.com/110x140?text=Erro+Imagem'">
-                                <div class="info">
-                                    <h4>${p.nome}</h4>
-                                    <p class="price">R$ ${parseFloat(p.valor).toFixed(2)}</p>
-                                    <p>Qnt - ${p.quantidade}</p>
-                                    <p><small>${p.classe || p.tamanho || ''}</small></p>
-                                    <button class="btn-remover-card" onclick="remover('${p._id}')">Remover</button>
-                                </div>
+    const res = await fetch(API_URL);
+    const produtos = await res.json();
+    const categorias = ["Boneco", "Brinco", "Caneta", "Chaveiro", "Colar", "Fotocard", "PhoneStrap", "Pulseira"];
+    
+    container.innerHTML = categorias.map(cat => {
+        const itens = produtos.filter(p => p.categoria === cat);
+        if (itens.length === 0) return '';
+        return `
+            <section id="sec-${cat}" class="categoria-group">
+                <h2>${cat}s</h2>
+                <div class="grid-container">
+                    ${itens.map(p => `
+                        <div class="card-produto">
+                            <img src="${p.imagem}" onerror="this.src='https://via.placeholder.com/110x140'">
+                            <div class="info">
+                                <h4>${p.nome}</h4>
+                                <p class="price">R$ ${parseFloat(p.valor).toFixed(2)}</p>
+                                <p>Qnt - ${p.quantidade}</p>
+                                <small>${p.classe || p.tamanho || ''}</small>
+                                <button class="btn-remover-card" onclick="removerUm('${p._id}')">Remover 1</button>
                             </div>
-                        `).join('')}
-                    </div>
-                </section>
-            `;
-        }).join('');
-    } catch (err) {
-        container.innerHTML = "<h3>Ligue o servidor para carregar os produtos.</h3>";
-    }
+                        </div>`).join('')}
+                </div>
+            </section>`;
+    }).join('');
 }
-
 window.onload = renderizar;

@@ -20,6 +20,7 @@ const Produto = mongoose.model('Produto', new mongoose.Schema({
     imagem: { type: String, required: true }
 }));
 
+// Listar todos os produtos
 app.get('/produtos', async (req, res) => {
     try {
         const produtos = await Produto.find();
@@ -27,6 +28,7 @@ app.get('/produtos', async (req, res) => {
     } catch (err) { res.status(500).json({ error: "Erro ao buscar." }); }
 });
 
+// Criar novo produto
 app.post('/produtos', async (req, res) => {
     try {
         const novo = new Produto(req.body);
@@ -35,11 +37,29 @@ app.post('/produtos', async (req, res) => {
     } catch (err) { res.status(400).json({ error: "Erro ao salvar." }); }
 });
 
-app.delete('/produtos/:id', async (req, res) => {
+// Rota para remover 1 unidade
+app.patch('/produtos/:id/remover-um', async (req, res) => {
     try {
-        await Produto.findByIdAndDelete(req.params.id);
-        res.json({ message: "Removido!" });
-    } catch (err) { res.status(404).json({ error: "Não encontrado." }); }
+        const produto = await Produto.findById(req.params.id);
+        if (produto && produto.quantidade > 0) {
+            produto.quantidade -= 1;
+            await produto.save();
+            res.json(produto);
+        } else {
+            res.status(400).json({ message: "Quantidade inválida." });
+        }
+    } catch (err) { res.status(500).json({ error: "Erro ao atualizar." }); }
+});
+
+// NOVA ROTA: Adicionar 1 unidade (Reposição)
+app.patch('/produtos/:id/adicionar-um', async (req, res) => {
+    try {
+        const produto = await Produto.findById(req.params.id);
+        if (!produto) return res.status(404).json({ error: "Não encontrado" });
+        produto.quantidade += 1;
+        await produto.save();
+        res.json(produto);
+    } catch (err) { res.status(500).json({ error: "Erro ao repor stock." }); }
 });
 
 const PORT = process.env.PORT || 3000;
