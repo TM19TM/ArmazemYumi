@@ -90,3 +90,21 @@ input:focus { border-color: var(--primary); outline: none; }
 .card-produto img { width: 110px; height: 140px; object-fit: cover; border-radius: 8px; }
 .info { margin-left: 20px; }
 .info h4 { color: var(--accent); margin: 0; font-size: 1.3rem; }
+
+.btn-remover-card {
+    margin-top: 10px;
+    background-color: var(--primary);
+    color: var(--dark);
+    border: 1.5px solid var(--dark);
+    padding: 5px 15px;
+    font-weight: bold;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 2px 2px 0px var(--dark);
+    transition: 0.2s;
+}
+
+.btn-remover-card:hover {
+    background-color: #fff;
+    box-shadow: 3px 3px 0px var(--dark);
+}

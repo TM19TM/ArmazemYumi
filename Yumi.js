@@ -1,33 +1,17 @@
 const API_URL = "http://localhost:3000/produtos";
 
-// Modal
-const modal = document.getElementById("modalOverlay");
-document.getElementById("openModal").onclick = () => modal.style.display = "block";
-document.querySelector(".close-btn").onclick = () => modal.style.display = "none";
+// ... (mantenha as funções de Modal e ajustarCampos anteriores)
 
-window.onclick = (event) => { if (event.target == modal) modal.style.display = "none"; }
-
-// Gerador de campos de Classe ou Tamanho
-function ajustarCampos() {
-    const cat = document.getElementById("categoriaSelect").value;
-    const area = document.getElementById("areaDinâmica");
-    area.innerHTML = "";
-
-    if (["Boneco", "Chaveiro", "Caneta", "Colar", "PhoneStrap"].includes(cat)) {
-        area.innerHTML = `<select id="classe" required>
-            <option value="Bronze">Bronze</option>
-            <option value="Prata">Prata</option>
-            <option value="Ouro">Ouro</option>
-        </select>`;
-    } else if (cat === "Pulseira") {
-        area.innerHTML = `<select id="tamanho" required>
-            <option value="PP">PP</option><option value="P">P</option><option value="M">M</option><option value="G">G</option><option value="GG">GG</option>
-        </select>`;
-    } else { // Brinco, Fotocard
-        area.innerHTML = `<select id="tamanho" required>
-            <option value="Pequeno">Pequeno</option><option value="Médio">Médio</option><option value="Grande">Grande</option>
-        </select>`;
+// Função para converter link do Google Drive em link direto de imagem
+function formatarLinkDrive(link) {
+    if (link.includes('drive.google.com')) {
+        // Extrai o ID do arquivo do link do Drive
+        const match = link.match(/\/d\/(.+?)\/(view|edit)?/);
+        if (match && match[1]) {
+            return `https://lh3.googleusercontent.com/u/0/d/${match[1]}`;
+        }
     }
+    return link; // Retorna o link original se não for Drive
 }
 
 // Salvar no MongoDB
@@ -40,8 +24,11 @@ document.getElementById("formProduto").onsubmit = async (e) => {
         tamanho: document.getElementById("tamanho")?.value || null,
         quantidade: document.getElementById("quantidade").value,
         valor: document.getElementById("valor").value,
-        imagem: document.getElementById("imagem").value
+        imagem: document.getElementById("nome").value // Campo imagem agora recebe o link
     };
+
+    // Pegamos o valor direto do input de imagem para tratar
+    data.imagem = formatarLinkDrive(document.getElementById("imagem").value);
 
     try {
         const res = await fetch(API_URL, {
@@ -51,18 +38,26 @@ document.getElementById("formProduto").onsubmit = async (e) => {
         });
         if(res.ok) { 
             modal.style.display = "none";
-            renderizar(); // Atualiza a lista sem recarregar a página
+            renderizar();
         }
-    } catch (err) { alert("Erro ao salvar no servidor!"); }
+    } catch (err) { alert("Erro ao salvar!"); }
 };
 
-// Renderizar todos os produtos organizados
+// Função para remover item do MongoDB
+async function remover(id) {
+    if (confirm("Deseja realmente excluir este item?")) {
+        try {
+            const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+            if (res.ok) renderizar();
+        } catch (err) { alert("Erro ao remover!"); }
+    }
+}
+
 async function renderizar() {
     const container = document.getElementById("catalogoCompleto");
     try {
         const res = await fetch(API_URL);
         const produtos = await res.json();
-        
         const categorias = ["Boneco", "Brinco", "Caneta", "Chaveiro", "Colar", "Fotocard", "PhoneStrap", "Pulseira"];
         
         container.innerHTML = categorias.map(cat => {
@@ -75,13 +70,13 @@ async function renderizar() {
                     <div class="grid-container">
                         ${itens.map(p => `
                             <div class="card-produto">
-                                <img src="${p.imagem}" onerror="this.src='https://via.placeholder.com/110x140'">
+                                <img src="${p.imagem}" alt="${p.nome}" onerror="this.src='https://via.placeholder.com/110x140?text=Erro+Imagem'">
                                 <div class="info">
                                     <h4>${p.nome}</h4>
-                                    <p class="price">R$ ${p.valor.toFixed(2)}</p>
+                                    <p class="price">R$ ${parseFloat(p.valor).toFixed(2)}</p>
                                     <p>Qnt - ${p.quantidade}</p>
                                     <p><small>${p.classe || p.tamanho || ''}</small></p>
-                                    <button class="btn-save" style="padding:5px; font-size:0.8rem" onclick="remover('${p._id}')">Remover</button>
+                                    <button class="btn-remover-card" onclick="remover('${p._id}')">Remover</button>
                                 </div>
                             </div>
                         `).join('')}
@@ -90,7 +85,7 @@ async function renderizar() {
             `;
         }).join('');
     } catch (err) {
-        container.innerHTML = "<h3 style='text-align:center'>Ligue o servidor Node.js para carregar os itens.</h3>";
+        container.innerHTML = "<h3>Erro ao carregar catálogo.</h3>";
     }
 }
 
