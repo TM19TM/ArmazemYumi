@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose'); // Faltava essa linha!
 const cors = require('cors');
 const connectDB = require('./DBYUMI');
 require('dotenv').config();
@@ -16,8 +17,8 @@ connectDB();
 const ProdutoSchema = new mongoose.Schema({
     nome: { type: String, required: true },
     categoria: { type: String, required: true },
-    classe: { type: String, default: null },   // Ex: Bronze, Prata, Ouro
-    tamanho: { type: String, default: null },  // Ex: P, M, G, PP, GG
+    classe: { type: String, default: null },   
+    tamanho: { type: String, default: null },  
     quantidade: { type: Number, required: true },
     valor: { type: Number, required: true },
     imagem: { type: String, required: true }
@@ -27,7 +28,6 @@ const Produto = mongoose.model('Produto', ProdutoSchema);
 
 // --- ROTAS API ---
 
-// 1. Buscar todos os produtos (usado no carregamento inicial)
 app.get('/produtos', async (req, res) => {
     try {
         const produtos = await Produto.find();
@@ -37,18 +37,16 @@ app.get('/produtos', async (req, res) => {
     }
 });
 
-// 2. Adicionar novo produto
 app.post('/produtos', async (req, res) => {
     try {
         const novoProduto = new Produto(req.body);
         await novoProduto.save();
         res.status(201).json(novoProduto);
     } catch (err) {
-        res.status(400).json({ error: "Erro ao salvar produto. Verifique os campos obrigatórios." });
+        res.status(400).json({ error: "Erro ao salvar produto." });
     }
 });
 
-// 3. Remover produto (pelo ID gerado pelo MongoDB)
 app.delete('/produtos/:id', async (req, res) => {
     try {
         await Produto.findByIdAndDelete(req.params.id);
@@ -59,4 +57,4 @@ app.delete('/produtos/:id', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Servidor rodando na porta ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Servidor rodando em http://localhost:${PORT}`));
