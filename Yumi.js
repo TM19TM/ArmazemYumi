@@ -6,11 +6,11 @@ const stockModal = document.getElementById("stockModalOverlay");
 document.getElementById("openModal").onclick = () => modal.style.display = "block";
 document.getElementById("openStockModal").onclick = () => abrirReposicao();
 
-// FUNÇÃO ATUALIZADA PARA LINKS DO DRIVE (docs ou drive)
+// FUNÇÃO CORRIGIDA PARA EXTRAIR O ID DO DRIVE DE QUALQUER FORMATO DE LINK
 function formatarLinkDrive(link) {
-    if (link.includes('google.com')) {
-        // Tenta extrair o ID que fica entre "/d/" e a próxima "/"
-        const match = link.match(/\/d\/(.+?)\//);
+    if (link.includes('drive.google.com') || link.includes('google.com')) {
+        // Captura o ID que vem após "/d/" até encontrar a próxima "/" ou caracteres de parâmetros (? ou #)
+        const match = link.match(/\/d\/([^/?#]+)/);
         if (match && match[1]) {
             return `https://docs.google.com/uc?export=view&id=${match[1]}`;
         }
