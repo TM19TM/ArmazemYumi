@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yumi Studio Art</title>
+    <link rel="stylesheet" href="Yumi.css">
+</head>
+<body>
+
+<header>
+    <div class="header-container">
+        <h1 class="logo">YUMI</h1>
+        <button id="openModal" class="btn-add-style">Adicionar Produto</button>
+    </div>
+    <nav class="nav-menu">
+        <a href="#sec-Boneco">Bonecos</a>
+        <a href="#sec-Brinco">Brincos</a>
+        <a href="#sec-Caneta">Canetas</a>
+        <a href="#sec-Chaveiro">Chaveiros</a>
+        <a href="#sec-Colar">Colares</a>
+        <a href="#sec-Fotocard">Fotocards</a>
+        <a href="#sec-PhoneStrap">PhoneStraps</a>
+        <a href="#sec-Pulseira">Pulseiras</a>
+    </nav>
+</header>
+
+<main id="catalogoCompleto">
+    </main>
+
+<div id="modalOverlay" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h3>Novo Produto</h3>
+        <form id="formProduto">
+            <input type="text" id="nome" placeholder="Nome / Tema" required>
+            <select id="categoriaSelect" onchange="ajustarCampos()" required>
+                <option value="" disabled selected>Categoria</option>
+                <option value="Boneco">Boneco</option>
+                <option value="Brinco">Brinco</option>
+                <option value="Caneta">Caneta</option>
+                <option value="Chaveiro">Chaveiro</option>
+                <option value="Colar">Colar</option>
+                <option value="Fotocard">Fotocard</option>
+                <option value="PhoneStrap">PhoneStrap</option>
+                <option value="Pulseira">Pulseira</option>
+            </select>
+            <div id="areaDinâmica"></div>
+            <div class="row">
+                <input type="number" id="quantidade" placeholder="Qtd" required>
+                <input type="number" step="0.01" id="valor" placeholder="Valor R$" required>
+            </div>
+            <input type="text" id="imagem" placeholder="URL da Imagem" required>
+            <button type="submit" class="btn-save">Salvar no Banco</button>
+        </form>
+    </div>
+</div>
+
+<script src="Yumi.js"></script>
+</body>
+</html>
