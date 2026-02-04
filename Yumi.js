@@ -1,4 +1,4 @@
-const API_URL = window.location.origin + "/produtos";
+const API_URL = "http://localhost:3000/produtos";
 
 const modal = document.getElementById("modalOverlay");
 const stockModal = document.getElementById("stockModalOverlay");

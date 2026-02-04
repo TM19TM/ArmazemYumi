@@ -76,6 +76,8 @@ input, select {
 
 input:focus { border-color: var(--primary); outline: none; }
 
+
+
 .btn-save { 
     width: 100%; background: var(--primary); border: 2px solid var(--dark); 
     padding: 15px; font-weight: bold; border-radius: 10px; cursor: pointer; 
