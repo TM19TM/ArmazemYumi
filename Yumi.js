@@ -23,7 +23,7 @@ function formatarLinkDrive(link) {
 function ajustarCampos() {
     const cat = document.getElementById("categoriaSelect").value;
     const area = document.getElementById("areaDinâmica");
-    area.innerHTML = (["Boneco", "Chaveiro", "Caneta", "Colar", "PhoneStrap"].includes(cat)) 
+    area.innerHTML = (["Adesivo", "Boneco", "Chaveiro", "Caneta", "Colar", "PhoneStrap"].includes(cat)) 
         ? `<select id="classe" required><option value="Bronze">Bronze</option><option value="Prata">Prata</option><option value="Ouro">Ouro</option></select>`
         : `<select id="tamanho" required><option value="Pequeno">Pequeno</option><option value="Médio">Médio</option><option value="Grande">Grande</option></select>`;
 }
@@ -71,7 +71,7 @@ async function renderizar() {
     const container = document.getElementById("catalogoCompleto");
     const res = await fetch(API_URL);
     const produtos = await res.json();
-    const categorias = ["Boneco", "Brinco", "Caneta", "Chaveiro", "Colar", "Fotocard", "PhoneStrap", "Pulseira"];
+    const categorias = ["Adesivo", "Boneco", "Brinco", "Caneta", "Chaveiro", "Colar", "Fotocard", "PhoneStrap", "Pulseira"];
     
     container.innerHTML = categorias.map(cat => {
         const itens = produtos.filter(p => p.categoria === cat);
