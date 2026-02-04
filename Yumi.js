@@ -25,7 +25,8 @@ function ajustarCampos() {
     const area = document.getElementById("areaDinâmica");
     area.innerHTML = (["Adesivo", "Boneco", "Chaveiro", "Caneta", "Colar", "PhoneStrap"].includes(cat)) 
         ? `<select id="classe" required><option value="Bronze">Bronze</option><option value="Prata">Prata</option><option value="Ouro">Ouro</option></select>`
-        : `<select id="tamanho" required><option value="Pequeno">Pequeno</option><option value="Médio">Médio</option><option value="Grande">Grande</option></select>`;
+         `<select id="tamanho" required><option value="Pequeno">Pequeno</option><option value="Médio">Médio</option><option value="Grande">Grande</option></select>`
+        : `<select id="combo" required><option value="Individual">Individual</option><option value="Combo">Combo</option></select>`;
 }
 
 async function abrirReposicao() {
@@ -58,6 +59,7 @@ document.getElementById("formProduto").onsubmit = async (e) => {
         categoria: document.getElementById("categoriaSelect").value,
         classe: document.getElementById("classe")?.value || null,
         tamanho: document.getElementById("tamanho")?.value || null,
+        combo: document.getElementById("combo")?.value || null,
         quantidade: document.getElementById("quantidade").value,
         valor: document.getElementById("valor").value,
         imagem: formatarLinkDrive(document.getElementById("imagem").value)
@@ -87,7 +89,7 @@ async function renderizar() {
                                 <h4>${p.nome}</h4>
                                 <p class="price">R$ ${parseFloat(p.valor).toFixed(2)}</p>
                                 <p>Qnt - ${p.quantidade}</p>
-                                <small>${p.classe || p.tamanho || ''}</small>
+                                <small>${p.classe || p.tamanho || p.combo || ''}</small>
                                 <button class="btn-remover-card" onclick="removerUm('${p._id}')">Remover 1</button>
                             </div>
                         </div>`).join('')}
